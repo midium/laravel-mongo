@@ -99,13 +99,17 @@ class HomeController extends Controller
     }
 
     public function info(){
-      $c = new \MongoClient();
-      $db = 'mongo';
-      $mongo = new \MongoDB($c, $db);
+      if (phpversion() != "7") {
+        $c = new \MongoClient();
+        $db = 'mongo';
+        $mongo = new \MongoDB($c, $db);
 
-      $mongodb_info = $mongo->command(array('serverStatus'=>true));
+        $mongodb_info = $mongo->command(array('serverStatus'=>true));
 
-      return view('info')->with('info', $mongodb_info);
+        return view('info')->with('info', $mongodb_info);
+      } else {
+        return 'TODO';
+      }
     }
 
     public function clearDoneTask(){
