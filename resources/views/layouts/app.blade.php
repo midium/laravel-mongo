@@ -23,6 +23,10 @@
         .fa-btn {
             margin-right: 6px;
         }
+
+        .sub-items{
+          background: #f3f3f3;
+        }
     </style>
 </head>
 <body id="app-layout">

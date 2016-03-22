@@ -17,28 +17,48 @@
         <div class="col-md-10 col-md-offset-1">
           <ul class="list-group" id="accordion">
             <li class="list-group-item list-group-item-info"><i class="glyphicon glyphicon-cog">&nbsp;</i>Server Details<a class="pull-right" href="{{url('/info')}}"><i class="glyphicon glyphicon-refresh"></i></a></li>
+
             @foreach($info as $key => $detail)
               @if(!is_array($detail))
                 @if($key == 'localTime')
-                  <li class="list-group-item"><strong>{{$key}}:</strong> {{date('Y-m-d H:i:m',strtotime($detail))}}
+                  <li class="list-group-item"><strong>{{$key}}:</strong> {{$detail->toDateTime()->format('Y-m-d H:i:s')}}
                 @else
                   <li class="list-group-item"><strong>{{$key}}:</strong> {{$detail}}</li>
                 @endif
               @else
-                @if($key != 'globalLock' && $key != 'locks' && $key != 'tcmalloc' && $key != 'wiredTiger' && $key != 'metrics')
-                  <li class="list-group-item" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><strong>{{$key}}:</strong><li>
-                  <li id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-                    @foreach($detail as $subkey => $subdetail)
-                        {{$subkey}} [{{$subdetail}}]
-                    @endforeach
-                  </li>
-                @endif
+                <li class="list-group-item"><strong>{{$key}}</strong> <i class="pull-right glyphicon glyphicon-chevron-down"></i></li>
+                @foreach($detail as $subkey => $subdetail)
+                  <?php
+                  //dd($info);
+                  //if($key == 'globalLock') dd($detail);
+                   echo drawItemAndCollapsedPanel($subkey, $subdetail, 1);
+                   ?>
+                @endforeach
               @endif
             @endforeach
           </ul>
         </div>
     </div>
 </div>
+<?php
+function drawItemAndCollapsedPanel($key, $detail, $level){
+  $result = '';
+  if(!is_array($detail)){
+    $result = "<div class=\"col-md-$level\">&nbsp;</div><li class=\"list-group-item sub-items\"><strong>$key:</strong> $detail</li>";
+  } else {
+
+    $result = "<div class=\"col-md-$level\">&nbsp;</div><li class=\"list-group-item\"><strong>$key</strong> <i class=\"pull-right glyphicon glyphicon-chevron-down\"></i></li>";
+    //$result .= "<div class=\"collapsed\">";
+    foreach ($detail as $subkey => $subdetail) {
+      $result .= drawItemAndCollapsedPanel($subkey, $subdetail, $level+1);
+    }
+    //$result .= "</div>";
+  }
+
+  return $result;
+}
+?>
+
 @endsection
 
 @section('scripts')
