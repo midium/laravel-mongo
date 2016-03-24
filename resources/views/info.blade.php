@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+.glyphicon-chevron-down, .glyphicon-chevron-up{
+  cursor: pointer;
+}
+</style>
+
 <div class="container">
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
@@ -26,14 +32,7 @@
                   <li class="list-group-item"><strong>{{$key}}:</strong> {{$detail}}</li>
                 @endif
               @else
-                <li class="list-group-item"><strong>{{$key}}</strong> <i class="pull-right glyphicon glyphicon-chevron-down"></i></li>
-                @foreach($detail as $subkey => $subdetail)
-                  <?php
-                  //dd($info);
-                  //if($key == 'globalLock') dd($detail);
-                   echo drawItemAndCollapsedPanel($subkey, $subdetail, 1);
-                   ?>
-                @endforeach
+                <?php echo drawItemAndCollapsedPanel('', $key, $detail, 1); ?>
               @endif
             @endforeach
           </ul>
@@ -41,18 +40,30 @@
     </div>
 </div>
 <?php
-function drawItemAndCollapsedPanel($key, $detail, $level){
+function drawItemAndCollapsedPanel($parent_key, $key, $detail, $level){
   $result = '';
   if(!is_array($detail)){
-    $result = "<div class=\"col-md-$level\">&nbsp;</div><li class=\"list-group-item sub-items\"><strong>$key:</strong> $detail</li>";
+    $result = "<li data-child=\"$parent_key\" class=\"list-group-item sub-items\"><strong>$key:</strong> $detail</li>";
   } else {
 
-    $result = "<div class=\"col-md-$level\">&nbsp;</div><li class=\"list-group-item\"><strong>$key</strong> <i class=\"pull-right glyphicon glyphicon-chevron-down\"></i></li>";
-    //$result .= "<div class=\"collapsed\">";
-    foreach ($detail as $subkey => $subdetail) {
-      $result .= drawItemAndCollapsedPanel($subkey, $subdetail, $level+1);
+    if($parent_key != ''){
+      $result = "<li data-child=\"$parent_key\" class=\"list-group-item\"><strong>$key</strong> <i class=\"pull-right glyphicon glyphicon-chevron-down\" data-reference=\"$parent_key$key\"></i></li>";
+      $result .= "<div data-child=\"$parent_key$key\" class=\"col-md-offset-$level\">";
+      foreach ($detail as $subkey => $subdetail) {
+        $result .= drawItemAndCollapsedPanel($parent_key.$key, $subkey, $subdetail, $level+1);
+      }
+      $result .= '</div>';
+
+    } else {
+
+      $result = "<li class=\"list-group-item\"><strong>$key</strong> <i class=\"pull-right glyphicon glyphicon-chevron-down\" data-reference=\"$key\"></i></li>";
+      $result .= "<div data-child=\"$key\" class=\"col-md-offset-$level\" >";
+      foreach ($detail as $subkey => $subdetail) {
+        $result .= drawItemAndCollapsedPanel($key, $subkey, $subdetail, $level+1);
+      }
+      $result .= '</div>';
+
     }
-    //$result .= "</div>";
   }
 
   return $result;
@@ -69,6 +80,21 @@ function drawItemAndCollapsedPanel($key, $detail, $level){
     });
 
     $('[data-toggle="tooltip"]').tooltip();
+
+    $('[data-child]').css('display', 'none');
+
+    $(document).on('click','.glyphicon-chevron-down', function(){
+      var childrens = $(this).data('reference');
+      $(this).removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+      $('[data-child="'+childrens+'"]').fadeIn();
+    });
+
+    $(document).on('click','.glyphicon-chevron-up', function(){
+      var childrens = $(this).data('reference');
+      $(this).removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+      $('[data-child="'+childrens+'"]').fadeOut();
+    });
+
   });
   </script>
 @endsection
